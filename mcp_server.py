@@ -1,19 +1,18 @@
 from mcp.server.fastmcp import FastMCP
 
-# Create MCP server
 mcp = FastMCP("Election Tools")
 
-# Register tool
 @mcp.tool()
 def voter_count():
-    """
-    Returns voter count for Hyderabad constituency.
-    """
     return {
         "constituency": "Hyderabad",
         "total_voters": 234567
     }
 
-# Run server
+# IMPORTANT: Run as HTTP server (SSE) for Render
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run_sse(
+        host="0.0.0.0",
+        port=int(__import__("os").environ.get("PORT", 10000)),
+        path="/sse"
+    )
