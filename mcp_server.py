@@ -1,18 +1,46 @@
-from mcp.server.fastmcp import FastMCP
+from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
+from pydantic import BaseModel
 
-mcp = FastMCP("Election Tools")
+app = FastAPI(title="Election Tools", version="1.0.0")
 
-@mcp.tool()
+
+# ✅ Response model
+class VoterCountResponse(BaseModel):
+    constituency: str
+    total_voters: int
+
+
+@app.get(
+    "/voter_count",
+    response_model=VoterCountResponse,
+    operation_id="voter_count_tool"
+)
 def voter_count():
-    return {
-        "constituency": "Hyderabad",
-        "total_voters": 234567
-    }
+    return {"constituency": "Hyderabad", "total_voters": 234567}
 
-# IMPORTANT: Run as HTTP server (SSE) for Render
-if __name__ == "__main__":
-    mcp.run_sse(
-        host="0.0.0.0",
-        port=int(__import__("os").environ.get("PORT", 10000)),
-        path="/sse"
+
+# ✅ FULL OpenAPI Override (Forces 3.0.3)
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    schema = get_openapi(
+        title="Election Tools",
+        version="1.0.0",
+        routes=app.routes,
     )
+
+    # ✅ Force version manually
+    schema["openapi"] = "3.0.3"
+
+    # ✅ Add servers (Agent Builder expects this)
+    schema["servers"] = [
+        {"url": "https://pythonelection-1.onrender.com"}
+    ]
+
+    app.openapi_schema = schema
+    return schema
+
+
+app.openapi = custom_openapi
