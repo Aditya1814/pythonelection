@@ -20,8 +20,8 @@ def voter_count():
     return {"constituency": "Hyderabad", "total_voters": 234567}
 
 
-# ✅ FULL OpenAPI Override (Forces 3.0.3)
-def custom_openapi():
+
+def custom_openapi(request: Request = None):
     if app.openapi_schema:
         return app.openapi_schema
 
@@ -31,12 +31,12 @@ def custom_openapi():
         routes=app.routes,
     )
 
-    # ✅ Force version manually
+    # ✅ Force OpenAPI version for Agent Builder
     schema["openapi"] = "3.0.3"
 
-    # ✅ Add servers (Agent Builder expects this)
+    # ✅ Dynamic server URL (no hardcoding)
     schema["servers"] = [
-        {"url": "https://pythonelection-1.onrender.com"}
+        {"url": "/"}
     ]
 
     app.openapi_schema = schema
